@@ -50,7 +50,9 @@ C o tape settings
 #define AUTODIFF_USE_OLDSTORE_2D
 #define AUTODIFF_USE_OLDSTORE_3D
 #define EXCLUDE_WHIO_GLOBUFF_2D
-#define ALLOW_INIT_WHTAPEIO
+
+C this line does nothing according to Martin Losch
+C#define ALLOW_INIT_WHTAPEIO
 
 C   ==================================================================
 #endif /* ndef ECCO_CPPOPTIONS_H */
