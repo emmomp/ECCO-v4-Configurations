@@ -3,7 +3,6 @@
  useEXF   = .TRUE.,
 #useRBCS  = .TRUE.,
  useGMRedi= .TRUE.,
-# useKPP   = .TRUE.,
  useSBO   = .TRUE.,
 #useMNC   = .TRUE.,
  useSeaice= .TRUE.,

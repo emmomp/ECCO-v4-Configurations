@@ -1,8 +1,8 @@
 # SEAICE parameters
  &SEAICE_PARM01
 
-      SEAICE_area_reg = 2.0e-2
-      SEAICE_hice_reg = 2.5e-3
+      SEAICE_area_reg = 2.0e-2,
+      SEAICE_hice_reg = 2.0e-1,
 
       SEAICEpresH0=2.,
       SEAICEpresPow0=1,
@@ -13,7 +13,8 @@
 # IGF Removing this hack 
 #      SEAICE_area_max = 0.97,      
       SEAICE_area_max = 1.0,
-
+      HO = 0.5,
+      HO_south = 0.5,
       SEAICE_no_slip     = .TRUE.,
 
 # IGF default values are 0.001.  Why are these values 1000 times larger

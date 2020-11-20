@@ -5,10 +5,13 @@
 #
  &AUTODIFF_PARM01
 # inAdExact = .FALSE.,
+ SIregFacInAd = 0.0,
+ SIregFacInFw = 0.0,
+
  useSEAICEinAdMode = .FALSE.,
  SEAICEuseDYNAMICSswitchInAd = .FALSE.,
-# useKPPinAdMode = .FALSE.,
-# useGMRediInAdMode = .FALSE.,
+ useKPPinAdMode = .FALSE.,
+ useGMRediInAdMode = .FALSE.,
  useGGL90inAdMode = .FALSE.,
  useSALT_PLUMEinAdMode = .FALSE.,
  &
