@@ -44,7 +44,6 @@
  rhonil=1029.,
  rhoConst=1029.,
  rhoConstFresh=1000.,
- temp_EvPrRn=0.,
  convertFW2Salt=-1.,
  eosType='JMD95Z',
  implicitFreeSurface=.TRUE.,
@@ -63,7 +62,7 @@
  useJamartWetPoints=.TRUE.,
  readBinaryPrec=32,
  writeBinaryPrec=32,
- debugLevel=1,
+ debugLevel=4,
  /
 
 # Elliptic solver parameters
@@ -74,31 +73,25 @@
 
 # Time stepping parameters
  &PARM03
- nIter0=1,
+nIter0=1,
 #2 lev2 for testing:
-#nTimeSteps=8,
+# nTimeSteps=8,
 #3month
 #nTimeSteps=2160,
-#6month
-#nTimeSteps=4343,
 #18month
-#nTimeSteps=13110,
+nTimeSteps=13110,
 #2yr
 #nTimeSteps=17520,
-#10yr
-#nTimeSteps=87647,
-#11yr
-#nTimeSteps=96407,
+#4-yr from 2014 to 2017, inclusive
+#nTimeSteps=35051,
 #20y:
 #nTimeSteps=175295,
 #22y:
 #nTimeSteps=192839,
 #24y:
 #nTimeSteps=210359,
-#April 30, 2017, 12Z
-#nTimeSteps=222023,
-#26yr
- nTimeSteps=227903,
+#26yr 
+#nTimeSteps=227903,
 #60 years
 #nTimeSteps=525985,
 #
@@ -124,7 +117,6 @@
 # dumpFreq    =31536000.0,
 # monitorFreq = 7200.0,
  monitorFreq = 6307200.0,
-#monitorfreq = 3600.
  dumpInitAndLast = .TRUE.,
  adjDumpFreq = 31536000.0,
 #adjDumpFreq = 604800.0,
@@ -150,8 +142,8 @@
  adTapeDir='tapes',
 #bathyFile      ='bathy_eccollc_90x50.bin',
  bathyFile      ='bathy_eccollc_90x50_min2pts.bin',
- hydrogThetaFile='T_OWPv1_M_eccollc_90x50.bin',
- hydrogSaltFile ='S_OWPv1_M_eccollc_90x50.bin',
+hydrogThetaFile='T_OWPv1_M_eccollc_90x50.bin',
+hydrogSaltFile ='S_OWPv1_M_eccollc_90x50.bin',
  viscA4Dfile    ='fenty_biharmonic_visc_v11.bin',
  viscA4Zfile    ='fenty_biharmonic_visc_v11.bin',
  geothermalFile='geothermalFlux.bin',
