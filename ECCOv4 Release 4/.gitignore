@@ -1,7 +1,4 @@
 build/
-build_ad/
-build_ff/
-build_ff_ad/
-code_ad/
-code_ff
-code_ff_ad/
+build_*/
+code_*/
+

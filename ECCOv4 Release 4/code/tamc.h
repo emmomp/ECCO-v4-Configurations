@@ -61,11 +61,11 @@ c     nthreads_chkpt - Number of threads to be used; nth_chkpt .eq. nTx*nTy
 #ifdef ALLOW_TAMC_CHECKPOINTING
 
       integer    nchklev_1
-      parameter( nchklev_1      =   5 )
+      parameter( nchklev_1      =   65 )
       integer    nchklev_2
-      parameter( nchklev_2      =  220 )
+      parameter( nchklev_2      =  65 )
       integer    nchklev_3
-      parameter( nchklev_3      =  220 )
+      parameter( nchklev_3      =  65 )
 
 c--   Note always check for the correct sizes of the common blocks!
 
