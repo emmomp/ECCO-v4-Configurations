@@ -965,6 +965,13 @@ C       (+ update "etaN" & "etaH", exact volume conservation):
         CALL INTEGR_CONTINUITY( uVel, vVel, myTime, myIter, myThid)
         CALL TIMER_STOP ('INTEGR_CONTINUITY   [FORWARD_STEP]',myThid)
       ENDIF
+#ifdef ALLOW_AUTODIFF_TAMC
+C--   This simple store directive avoids an (expensive) extra
+C--   These store directives avoid an (expensive) extra
+C     "call solve_for_pressure" in forward_step_ad
+CADJ STORE wVel = comlev1, key = ikey_dynamics, kind = isbyte
+CADJ STORE etaN = comlev1, key = ikey_dynamics, kind = isbyte
+#endif
 
 #ifdef NONLIN_FRSURF
       IF ( select_rStar.NE.0 ) THEN

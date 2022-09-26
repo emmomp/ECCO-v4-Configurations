@@ -252,6 +252,8 @@ c     objf_gencost - gencost user defined contribution
      &       gencost_bar3d, gencost_mod3d, gencost_wei3d,
      &       gencost_mskC, gencost_mskW, gencost_mskS,
 #endif
+     &       gencost_refPressure, gencost_sigmaLow, gencost_sigmaHigh,
+     &       gencost_tanhScale,
      &       gencost_spmin, gencost_spmax, gencost_spzero,
      &       gencost_period, gencost_preproc_r, gencost_posproc_r,
      &       gencost_wei1d, gencost_1ddata
@@ -278,6 +280,10 @@ c     objf_gencost - gencost user defined contribution
       _RL  gencost_mskSsurf(1-olx:snx+olx,1-oly:sny+oly,
      &       nsx,nsy,NGENCOST)
       _RL  gencost_mskVertical(nr,NGENCOST)
+      _RL  gencost_sigmaLow(NGENCOST)
+      _RL  gencost_sigmaHigh(NGENCOST)
+      _RL  gencost_refPressure(NGENCOST)
+      _RL  gencost_tanhScale(NGENCOST)
 #ifdef ALLOW_GENCOST3D
       _RL  gencost_bar3d(1-olx:snx+olx,1-oly:sny+oly,
      &       nr,nsx,nsy,NGENCOST3D)
@@ -327,9 +333,10 @@ c     objf_gencost - gencost user defined contribution
       common /ecco_gencost_l_1/
      &       gencost_timevaryweight, gencost_barskip,
      &       using_gencost, gencost_is3d, gencost_msk_is3d,
-     &       gencost_is1d
+     &       gencost_is1d, gencost_useDensityMask
       LOGICAL using_gencost(NGENCOST)
       LOGICAL gencost_is3d(NGENCOST)
+      LOGICAL gencost_useDensityMask(NGENCOST)
       LOGICAL gencost_is1d(NGENCOST)
       LOGICAL gencost_msk_is3d(NGENCOST)
       LOGICAL gencost_timevaryweight(NGENCOST)
