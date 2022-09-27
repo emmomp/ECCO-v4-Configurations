@@ -45,6 +45,7 @@ c     == local variables ==
       integer kgen, kgen3d, itr
       _RL areavolTile(nSx,nSy), areavolGlob
       _RL tmpfld, tmpvol, tmpmsk, tmpmsk2, tmpmskW, tmpmskS
+      _RL tmp_sigmsk, tmpsig, tmpsig_lower, tmpsig_upper
 #endif
 
 c- note defined with overlap here, not needed, but more efficient
@@ -330,6 +331,30 @@ c
               tmpmsk=gencost_mskC(i,j,k,bi,bj,kgen3d)
 #endif
             endif
+
+C ---- If density mask is enabled, use it here ----
+            IF ( maskC(i,j,k,bi,bj).EQ.oneRS .AND.
+     &           gencost_useDensityMask(kgen) ) THEN
+C            - first, calculate the scalar density
+             CALL FIND_RHO_SCALAR(
+     I              theta(i,j,k,bi,bj),
+     I              salt(i,j,k,bi,bj),
+     I              gencost_refPressure(kgen),
+     O              tmpsig,
+     I              myThid )
+C            - subtract 1000 to get sigma
+             tmpsig = tmpsig - 1000. _d 0
+C            - now, tmpmsk is sigmoid times this value
+             tmpsig_lower = 0.5 + 0.5*tanh(gencost_tanhScale(kgen)
+     &           *(tmpsig-gencost_sigmaLow(kgen)))
+             tmpsig_upper = 0.5 - 0.5*tanh(gencost_tanhScale(kgen)
+     &           *(tmpsig-gencost_sigmaHigh(kgen)))
+C             - update mask value based on the sigmoid function
+             tmp_sigmsk = tmpsig_lower*tmpsig_upper
+             tmpmsk = tmpmsk*tmp_sigmsk
+            ENDIF
+C ---- end of density mask (but tmpmsk is used below)
+
 c
             tmpfld=0. _d 0
             tmpmsk2=0. _d 0
@@ -398,6 +423,48 @@ c
               tmpmskS=gencost_mskS(i,j,k,bi,bj,kgen3d)
 #endif
             endif
+C ---- If density mask is enabled, use it here ----
+            IF ( maskW(i,j,k,bi,bj).EQ.oneRS .AND.
+     &           gencost_useDensityMask(kgen) ) THEN
+C            - first, calculate the scalar density
+             CALL FIND_RHO_SCALAR(
+     I              theta(i,j,k,bi,bj),
+     I              salt(i,j,k,bi,bj),
+     I              gencost_refPressure(kgen),
+     O              tmpsig,
+     I              myThid )
+C            - subtract 1000 to get sigma
+             tmpsig = tmpsig - 1000. _d 0
+C            - now, tmpmsk is sigmoid times this value
+             tmpsig_lower = 0.5 + 0.5*tanh(gencost_tanhScale(kgen)
+     &           *(tmpsig-gencost_sigmaLow(kgen)))
+             tmpsig_upper = 0.5 - 0.5*tanh(gencost_tanhScale(kgen)
+     &           *(tmpsig-gencost_sigmaHigh(kgen)))
+C             - update mask value based on the sigmoid function
+             tmp_sigmsk = tmpsig_lower*tmpsig_upper
+             tmpmskW = tmpmskW*tmp_sigmsk
+            ENDIF
+C ---- If density mask is enabled, use it here ----
+            IF ( maskS(i,j,k,bi,bj).EQ.oneRS .AND.
+     &           gencost_useDensityMask(kgen) ) THEN
+C            - first, calculate the scalar density
+             CALL FIND_RHO_SCALAR(
+     I              theta(i,j,k,bi,bj),
+     I              salt(i,j,k,bi,bj),
+     I              gencost_refPressure(kgen),
+     O              tmpsig,
+     I              myThid )
+C            - subtract 1000 to get sigma
+             tmpsig = tmpsig - 1000. _d 0
+C            - now, tmpmsk is sigmoid times this value
+             tmpsig_lower = 0.5 + 0.5*tanh(gencost_tanhScale(kgen)
+     &           *(tmpsig-gencost_sigmaLow(kgen)))
+             tmpsig_upper = 0.5 - 0.5*tanh(gencost_tanhScale(kgen)
+     &           *(tmpsig-gencost_sigmaHigh(kgen)))
+C             - update mask value based on the sigmoid function
+             tmp_sigmsk = tmpsig_lower*tmpsig_upper
+             tmpmskS = tmpmskS*tmp_sigmsk
+            ENDIF
 c
             if (gencost_barfile(kgen)(1:13).EQ.'m_horflux_vol') then
               gencost_storefld(i,j,bi,bj,kgen) =
