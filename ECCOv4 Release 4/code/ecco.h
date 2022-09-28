@@ -145,7 +145,6 @@ c                 the current model integration.
      &                    m_eta_dyn, m_eta_ib,
 #endif
 #endif
-     &                    msktrVolW,msktrVolS,
      &                    trVol, trHeat, trSalt,
      &                    VOLsumGlob_0, VOLsumGlob,
      &                    RHOsumGlob_0, RHOsumGlob,
@@ -169,8 +168,6 @@ c                 the current model integration.
 
       _RL m_UE (1-olx:snx+olx,1-oly:sny+oly,nr,nsx,nsy)
       _RL m_VN (1-olx:snx+olx,1-oly:sny+oly,nr,nsx,nsy)
-      _RL msktrVolW (1-OLx:sNx+OLx,1-OLy:sNy+OLy,   nSx,nSy)
-      _RL msktrVolS (1-OLx:sNx+OLx,1-OLy:sNy+OLy,   nSx,nSy)
       _RL trVol(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
       _RL trHeat(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
       _RL trSalt(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
