@@ -2,6 +2,7 @@ C $Header: /u/gcmpack/MITgcm/pkg/ecco/ecco_phys.F,v 1.18 2017/04/03 23:16:38 ou.
 C $Name:  $
 
 #include "ECCO_OPTIONS.h"
+#include "GMREDI_OPTIONS.h"
 
       subroutine ecco_phys( mythid )
 
@@ -22,6 +23,7 @@ c     == global variables ==
 #include "PARAMS.h"
 #include "DYNVARS.h"
 #include "FFIELDS.h"
+#include "GMREDI.h"
 #include "GRID.h"
 #ifdef ALLOW_ECCO
 # include "ecco.h"
@@ -42,10 +44,11 @@ c     == local variables ==
       integer jmin,jmax
       integer imin,imax
 #ifdef ALLOW_GENCOST_CONTRIBUTION
-      integer kgen, kgen3d, itr
+      integer kgen, kgen3d, itr, kp1, maskp1 
       _RL areavolTile(nSx,nSy), areavolGlob
       _RL tmpfld, tmpvol, tmpmsk, tmpmsk2, tmpmskW, tmpmskS
       _RL tmp_sigmsk, tmpsig, tmpsig_lower, tmpsig_upper
+      _RL delPsi, uRes, vRes, dfx, dfy
 #endif
 
 c- note defined with overlap here, not needed, but more efficient
@@ -255,6 +258,9 @@ c immediately afterward, init is probably not needed.
             enddo
           enddo
           do k = 1,nr
+            kp1 = MIN(k+1,Nr)
+            maskp1 = 1.
+            IF (k.GE.Nr) maskp1 = 0.
             do j = 1,sNy
               do i =  1,sNx
                 trVolW(i,j,k) =
@@ -266,12 +272,44 @@ c immediately afterward, init is probably not needed.
      &                *dxG(i,j,bi,bj)*drF(k)*msktrVolS(i,j,bi,bj)
      &                *maskInS(i,j,bi,bj)
 
-                trHeatW(i,j,k) = trVolW(i,j,k)
+                delPsi = GM_PsiX(i,j,kp1,bi,bj)*maskp1
+     &            - GM_PsiX(i,j, k, bi,bj)
+                uRes = uVel(i,j,k,bi,bj)
+     &            + delPsi*recip_drF(k)*_recip_hFacW(i,j,k,bi,bj) 
+                delPsi = GM_PsiY(i,j,kp1,bi,bj)*maskp1
+     &            - GM_PsiY(i,j, k, bi,bj)
+                vRes = vVel(i,j,k,bi,bj)
+     &            + delPsi*recip_drF(k)*_recip_hFacS(i,j,k,bi,bj)
+ 
+                dfx = -diffKhT*dyG(i,j,bi,bj)*hFacW(i,j,k,bi,bj)*drF(k)
+     &            *_recip_dxC(i,j,bi,bj)*recip_deepFacC(k)
+     &            *(theta(i,j,k,bi,bj)-theta(i-1,j,k,bi,bj))
+     &            *cosFacU(j,bi,bj)
+     &            *HeatCapacity_Cp*rhoConst
+                dfy = -diffKhT*dxG(i,j,bi,bj)*hFacS(i,j,k,bi,bj)*drF(k)
+     &            *_recip_dyC(i,j,bi,bj)*recip_deepFacC(k)
+     &            *(theta(i,j,k,bi,bj)-theta(i,j-1,k,bi,bj))
+#ifdef ISOTROPIC_COS_SCALING
+     &            *cosFacV(j,bi,bj)
+#endif
+     &            *HeatCapacity_Cp*rhoConst
+
+                trHeatW(i,j,k) = uRes
+     &                *dyG(i,j,bi,bj)*drF(k)*msktrVolW(i,j,bi,bj)
+     &                *maskInW(i,j,bi,bj)*hFacW(i,j,k,bi,bj)
      &                *(theta(i,j,k,bi,bj)+theta(i-1,j,k,bi,bj))*halfRL
      &                *HeatCapacity_Cp*rhoConst
-                trHeatS(i,j,k) = trVolS(i,j,k)
+                trHeatS(i,j,k) = vRes
+     &                *dxG(i,j,bi,bj)*drF(k)*msktrVolS(i,j,bi,bj)
+     &                *maskInS(i,j,bi,bj)*hFacS(i,j,k,bi,bj)
      &                *(theta(i,j,k,bi,bj)+theta(i,j-1,k,bi,bj))*halfRL
      &                *HeatCapacity_Cp*rhoConst
+c                trHeatW(i,j,k) = trVolW(i,j,k)
+c     &                *(theta(i,j,k,bi,bj)+theta(i-1,j,k,bi,bj))*halfRL
+c     &                *HeatCapacity_Cp*rhoConst
+c                trHeatS(i,j,k) = trVolS(i,j,k)
+c     &                *(theta(i,j,k,bi,bj)+theta(i,j-1,k,bi,bj))*halfRL
+c     &                *HeatCapacity_Cp*rhoConst
 
                 trSaltW(i,j,k) = trVolW(i,j,k)
      &                *(salt(i,j,k,bi,bj)+salt(i-1,j,k,bi,bj))*halfRL
@@ -282,6 +320,7 @@ c immediately afterward, init is probably not needed.
 c now summing
                 trVol(i,j,k,bi,bj)=trVolW(i,j,k)+trVolS(i,j,k)
                 trHeat(i,j,k,bi,bj)=trHeatW(i,j,k)+trHeatS(i,j,k)
+     &                +dfx+dfy           
                 trSalt(i,j,k,bi,bj)=trSaltW(i,j,k)+trSaltS(i,j,k)
                 
               enddo
