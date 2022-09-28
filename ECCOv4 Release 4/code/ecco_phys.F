@@ -406,7 +406,8 @@ c
             endif
 
 C ---- If density mask is enabled, use it here ----
-            IF ( maskW(i,j,k,bi,bj).EQ.oneRS .AND.
+            IF ( (maskW(i,j,k,bi,bj).EQ.oneRS .OR.
+     &           maskS(i,j,k,bi,bj).EQ.oneRS) .AND.
      &           gencost_useDensityMask(kgen) ) THEN
 C            - first, calculate the scalar density
              CALL FIND_RHO_SCALAR(
@@ -425,27 +426,6 @@ C            - now, tmpmsk is sigmoid times this value
 C             - update mask value based on the sigmoid function
              tmp_sigmsk = tmpsig_lower*tmpsig_upper
              tmpmskW = tmpmskW*tmp_sigmsk
-            ENDIF
-
-C ---- If density mask is enabled, use it here ----
-            IF ( maskS(i,j,k,bi,bj).EQ.oneRS .AND.
-     &           gencost_useDensityMask(kgen) ) THEN
-C            - first, calculate the scalar density
-             CALL FIND_RHO_SCALAR(
-     I              theta(i,j,k,bi,bj),
-     I              salt(i,j,k,bi,bj),
-     I              gencost_refPressure(kgen),
-     O              tmpsig,
-     I              myThid )
-C            - subtract 1000 to get sigma
-             tmpsig = tmpsig - 1000. _d 0
-C            - now, tmpmsk is sigmoid times this value
-             tmpsig_lower = 0.5 + 0.5*tanh(gencost_tanhScale(kgen)
-     &           *(tmpsig-gencost_sigmaLow(kgen)))
-             tmpsig_upper = 0.5 - 0.5*tanh(gencost_tanhScale(kgen)
-     &           *(tmpsig-gencost_sigmaHigh(kgen)))
-C             - update mask value based on the sigmoid function
-             tmp_sigmsk = tmpsig_lower*tmpsig_upper
              tmpmskS = tmpmskS*tmp_sigmsk
             ENDIF
 
