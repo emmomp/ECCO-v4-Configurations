@@ -338,6 +338,10 @@ c
 c---------
           do k = 1,nr
 c
+            kp1 = MIN(k+1,nr)
+            maskp1 = 1.
+            IF (k.GE.nr) maskp1 = 0.
+            
             tmpmskW=0. _d 0
             tmpmskS=0. _d 0
             if (.NOT.gencost_msk_is3d(kgen)) then
@@ -396,6 +400,16 @@ c
      &          +vVel(i,j,k,bi,bj)*tmpmskS
      &           *(theta(i,j,k,bi,bj)+theta(i,j-1,k,bi,bj))*halfRL
      &           *HeatCapacity_Cp*rhoConst
+
+c                delPsi = GM_PsiX(i,j,kp1,bi,bj)*maskp1
+c     &            - GM_PsiX(i,j, k, bi,bj)
+c                uRes = uVel(i,j,k,bi,bj)
+c     &            + delPsi*recip_drF(k)*_recip_hFacW(i,j,k,bi,bj) 
+c                delPsi = GM_PsiY(i,j,kp1,bi,bj)*maskp1
+c     &            - GM_PsiY(i,j, k, bi,bj)
+c                vRes = vVel(i,j,k,bi,bj)
+c     &            + delPsi*recip_drF(k)*_recip_hFacS(i,j,k,bi,bj)
+ 
             
             ! Only compute tr[Vol,Heat,Salt] if necessary, use
             ! gencost_mask[W/S] rather than old msktrVol  
