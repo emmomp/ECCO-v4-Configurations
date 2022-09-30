@@ -386,6 +386,17 @@ c
      &          +uVel(i,j,k,bi,bj)*tmpmskW
      &          +vVel(i,j,k,bi,bj)*tmpmskS
 
+            elseif (gencost_barfile(kgen)(1:14).EQ.'m_horflux_heat')
+     &        then
+              gencost_storefld(i,j,bi,bj,kgen) =
+     &          gencost_storefld(i,j,bi,bj,kgen)
+     &          +uVel(i,j,k,bi,bj)*tmpmskW
+     &           *(theta(i,j,k,bi,bj)+theta(i-1,j,k,bi,bj))*halfRL
+     &           *HeatCapacity_Cp*rhoConst
+     &          +vVel(i,j,k,bi,bj)*tmpmskS
+     &           *(theta(i,j,k,bi,bj)+theta(i,j-1,k,bi,bj))*halfRL
+     &           *HeatCapacity_Cp*rhoConst
+            
             ! Only compute tr[Vol,Heat,Salt] if necessary, use
             ! gencost_mask[W/S] rather than old msktrVol  
             elseif ( gencost_barfile(kgen)(1:7).eq.'m_trVol' .or. 
