@@ -393,7 +393,7 @@ c
      &          +uVel(i,j,k,bi,bj)*tmpmskW
      &          +vVel(i,j,k,bi,bj)*tmpmskS
 
-            elseif (gencost_barfile(kgen)(1:15).EQ.'m_horflux_advth')
+            elseif (gencost_barfile(kgen)(1:15).EQ.'m_horflux_theta')
      &        then
                 delPsi = GM_PsiX(i,j,kp1,bi,bj)*maskp1
      &            - GM_PsiX(i,j, k, bi,bj)
@@ -406,35 +406,15 @@ c
 
                gencost_storefld(i,j,bi,bj,kgen) =
      &          gencost_storefld(i,j,bi,bj,kgen)
-c    &          +uVel(i,j,k,bi,bj)*tmpmskW
      &          +uRes*tmpmskW
      &           *(theta(i,j,k,bi,bj)+theta(i-1,j,k,bi,bj))*halfRL
      &           *HeatCapacity_Cp*rhoConst
-c     &          +vVel(i,j,k,bi,bj)*tmpmskS
      &          +vRes*tmpmskS  
      &           *(theta(i,j,k,bi,bj)+theta(i,j-1,k,bi,bj))*halfRL
      &           *HeatCapacity_Cp*rhoConst
 
-c            elseif (gencost_barfile(kgen)(1:15).EQ.'m_horflux_difth')
-c     &        then 
-c              gencost_storefld(i,j,bi,bj,kgen) =
-c     &           gencost_storefld(i,j,bi,bj,kgen)
-c     &           -diffKhT*tmpmskW
-c     &            *_recip_dxC(i,j,bi,bj)*recip_deepFacC(k)
-c     &            *(theta(i,j,k,bi,bj)-theta(i-1,j,k,bi,bj))
-c     &            *cosFacU(j,bi,bj)
-c     &            *HeatCapacity_Cp*rhoConst
-c     &           -diffKhT*tmpmskS
-c     &            *_recip_dyC(i,j,bi,bj)*recip_deepFacC(k)
-c     &            *(theta(i,j,k,bi,bj)-theta(i,j-1,k,bi,bj))
-c#ifdef ISOTROPIC_COS_SCALING
-c     &            *cosFacV(j,bi,bj)
-c#endif
-c     &            *HeatCapacity_Cp*rhoConst
-
-c              gencost_storefld(i,j,bi,bj,kgen) =
-c     &          gencost_storefld(i,j,bi,bj,kgen)+dfx+dfy
-
+            elseif (gencost_barfile(kgen)(1:14).EQ.'m_horflux_salt')
+     &        then
                 delPsi = GM_PsiX(i,j,kp1,bi,bj)*maskp1
      &            - GM_PsiX(i,j, k, bi,bj)
                 uRes = uVel(i,j,k,bi,bj)
@@ -443,8 +423,14 @@ c     &          gencost_storefld(i,j,bi,bj,kgen)+dfx+dfy
      &            - GM_PsiY(i,j, k, bi,bj)
                 vRes = vVel(i,j,k,bi,bj)
      &            + delPsi*recip_drF(k)*_recip_hFacS(i,j,k,bi,bj)
- 
-            
+
+               gencost_storefld(i,j,bi,bj,kgen) =
+     &          gencost_storefld(i,j,bi,bj,kgen)
+     &          +uRes*tmpmskW
+     &           *(salt(i,j,k,bi,bj)+salt(i-1,j,k,bi,bj))*halfRL
+     &          +vRes*tmpmskS  
+     &           *(salt(i,j,k,bi,bj)+salt(i,j-1,k,bi,bj))*halfRL
+
             ! Only compute tr[Vol,Heat,Salt] if necessary, use
             ! gencost_mask[W/S] rather than old msktrVol  
             elseif ( gencost_barfile(kgen)(1:7).eq.'m_trVol' .or. 
