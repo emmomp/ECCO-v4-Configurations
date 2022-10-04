@@ -22,6 +22,8 @@ c     == global variables ==
 #include "PARAMS.h"
 #include "DYNVARS.h"
 #include "FFIELDS.h"
+#include "GMREDI_OPTIONS.h"
+#include "GMREDI.h"
 #include "GRID.h"
 #ifdef ALLOW_ECCO
 # include "ecco.h"
@@ -42,10 +44,11 @@ c     == local variables ==
       integer jmin,jmax
       integer imin,imax
 #ifdef ALLOW_GENCOST_CONTRIBUTION
-      integer kgen, kgen3d, itr
+      integer kgen, kgen3d, itr, kp1, maskp1
       _RL areavolTile(nSx,nSy), areavolGlob
       _RL tmpfld, tmpvol, tmpmsk, tmpmsk2, tmpmskW, tmpmskS
       _RL tmp_sigmsk, tmpsig, tmpsig_lower, tmpsig_upper
+      _RL delPsi, uRes, vRes
 #endif
 
 c- note defined with overlap here, not needed, but more efficient
@@ -301,6 +304,10 @@ c now summing
 
       do kgen=1,NGENCOST
 
+      kp1 = MIN(k+1,nr)
+      maskp1 = 1.
+      IF (k.GE.nr) maskp1 = 0.
+      
       itr = gencost_itracer(kgen)
 
       call ecco_zero(gencost_storefld(1-OLx,1-OLy,1,1,kgen),
@@ -424,7 +431,8 @@ c
 #endif
             endif
 C ---- If density mask is enabled, use it here ----
-            IF ( maskW(i,j,k,bi,bj).EQ.oneRS .AND.
+            IF (( maskW(i,j,k,bi,bj).EQ.oneRS .OR.
+     &            maskS(i,j,k,bi,bj).EQ.oneRS) .AND.
      &           gencost_useDensityMask(kgen) ) THEN
 C            - first, calculate the scalar density
              CALL FIND_RHO_SCALAR(
@@ -443,26 +451,6 @@ C            - now, tmpmsk is sigmoid times this value
 C             - update mask value based on the sigmoid function
              tmp_sigmsk = tmpsig_lower*tmpsig_upper
              tmpmskW = tmpmskW*tmp_sigmsk
-            ENDIF
-C ---- If density mask is enabled, use it here ----
-            IF ( maskS(i,j,k,bi,bj).EQ.oneRS .AND.
-     &           gencost_useDensityMask(kgen) ) THEN
-C            - first, calculate the scalar density
-             CALL FIND_RHO_SCALAR(
-     I              theta(i,j,k,bi,bj),
-     I              salt(i,j,k,bi,bj),
-     I              gencost_refPressure(kgen),
-     O              tmpsig,
-     I              myThid )
-C            - subtract 1000 to get sigma
-             tmpsig = tmpsig - 1000. _d 0
-C            - now, tmpmsk is sigmoid times this value
-             tmpsig_lower = 0.5 + 0.5*tanh(gencost_tanhScale(kgen)
-     &           *(tmpsig-gencost_sigmaLow(kgen)))
-             tmpsig_upper = 0.5 - 0.5*tanh(gencost_tanhScale(kgen)
-     &           *(tmpsig-gencost_sigmaHigh(kgen)))
-C             - update mask value based on the sigmoid function
-             tmp_sigmsk = tmpsig_lower*tmpsig_upper
              tmpmskS = tmpmskS*tmp_sigmsk
             ENDIF
 c
@@ -471,6 +459,27 @@ c
      &          gencost_storefld(i,j,bi,bj,kgen)
      &          +uVel(i,j,k,bi,bj)*tmpmskW
      &          +vVel(i,j,k,bi,bj)*tmpmskS
+            elseif (gencost_barfile(kgen)(1:15).EQ.'m_horflux_theta')
+     &        then
+                delPsi = GM_PsiX(i,j,kp1,bi,bj)*maskp1
+     &            - GM_PsiX(i,j, k, bi,bj)
+                uRes = uVel(i,j,k,bi,bj)
+     &            + delPsi*recip_drF(k)*_recip_hFacW(i,j,k,bi,bj)
+                delPsi = GM_PsiY(i,j,kp1,bi,bj)*maskp1
+     &            - GM_PsiY(i,j, k, bi,bj)
+                vRes = vVel(i,j,k,bi,bj)
+     &            + delPsi*recip_drF(k)*_recip_hFacS(i,j,k,bi,bj)
+
+               gencost_storefld(i,j,bi,bj,kgen) =
+     &          gencost_storefld(i,j,bi,bj,kgen)
+c    &          +uVel(i,j,k,bi,bj)*tmpmskW
+     &          +uRes*tmpmskW
+     &           *(theta(i,j,k,bi,bj)+theta(i-1,j,k,bi,bj))*halfRL
+     &           *HeatCapacity_Cp*rhoConst
+c     &          +vVel(i,j,k,bi,bj)*tmpmskS
+     &          +vRes*tmpmskS
+     &           *(theta(i,j,k,bi,bj)+theta(i,j-1,k,bi,bj))*halfRL
+     &           *HeatCapacity_Cp*rhoConst
             endif
           enddo
 c---------
