@@ -23,6 +23,8 @@ c     == global variables ==
 #include "DYNVARS.h"
 #include "FFIELDS.h"
 #include "GRID.h"
+#include "GMREDI_OPTIONS.h"
+#include "GMREDI.h"
 #ifdef ALLOW_ECCO
 # include "ecco.h"
 #endif
@@ -42,10 +44,11 @@ c     == local variables ==
       integer jmin,jmax
       integer imin,imax
 #ifdef ALLOW_GENCOST_CONTRIBUTION
-      integer kgen, kgen3d, itr
+      integer kgen, kgen3d, itr, kp1, maskp1
       _RL areavolTile(nSx,nSy), areavolGlob
       _RL tmpfld, tmpvol, tmpmsk, tmpmsk2, tmpmskW, tmpmskS
       _RL tmp_sigmsk, tmpsig, tmpsig_lower, tmpsig_upper
+      _RL uRes, vRes, delPsi
 #endif
 
 c- note defined with overlap here, not needed, but more efficient
@@ -215,7 +218,7 @@ C     i.e. sterGloH computed in ecco_phys.F (units converted from m to m2/s2)
             do j = 1,sNy
               do i =  1,sNx
                 m_UE(i,j,k,bi,bj)=0. _d 0
-                m_VN(i,j,k,bi,bj)=0. _d 0
+               m_VN(i,j,k,bi,bj)=0. _d 0
               enddo
             enddo
           enddo
@@ -390,25 +393,56 @@ c
      &          +uVel(i,j,k,bi,bj)*tmpmskW
      &          +vVel(i,j,k,bi,bj)*tmpmskS
 
-            elseif (gencost_barfile(kgen)(1:14).EQ.'m_horflux_heat')
+            elseif (gencost_barfile(kgen)(1:15).EQ.'m_horflux_advth')
      &        then
-              gencost_storefld(i,j,bi,bj,kgen) =
+                delPsi = GM_PsiX(i,j,kp1,bi,bj)*maskp1
+     &            - GM_PsiX(i,j, k, bi,bj)
+                uRes = uVel(i,j,k,bi,bj)
+     &            + delPsi*recip_drF(k)*_recip_hFacW(i,j,k,bi,bj) 
+                delPsi = GM_PsiY(i,j,kp1,bi,bj)*maskp1
+     &            - GM_PsiY(i,j, k, bi,bj)
+                vRes = vVel(i,j,k,bi,bj)
+     &            + delPsi*recip_drF(k)*_recip_hFacS(i,j,k,bi,bj)
+
+               gencost_storefld(i,j,bi,bj,kgen) =
      &          gencost_storefld(i,j,bi,bj,kgen)
-     &          +uVel(i,j,k,bi,bj)*tmpmskW
+c    &          +uVel(i,j,k,bi,bj)*tmpmskW
+     &          +uRes*tmpmskW
      &           *(theta(i,j,k,bi,bj)+theta(i-1,j,k,bi,bj))*halfRL
      &           *HeatCapacity_Cp*rhoConst
-     &          +vVel(i,j,k,bi,bj)*tmpmskS
+c     &          +vVel(i,j,k,bi,bj)*tmpmskS
+     &          +vRes*tmpmskS  
      &           *(theta(i,j,k,bi,bj)+theta(i,j-1,k,bi,bj))*halfRL
      &           *HeatCapacity_Cp*rhoConst
 
-c                delPsi = GM_PsiX(i,j,kp1,bi,bj)*maskp1
-c     &            - GM_PsiX(i,j, k, bi,bj)
-c                uRes = uVel(i,j,k,bi,bj)
-c     &            + delPsi*recip_drF(k)*_recip_hFacW(i,j,k,bi,bj) 
-c                delPsi = GM_PsiY(i,j,kp1,bi,bj)*maskp1
-c     &            - GM_PsiY(i,j, k, bi,bj)
-c                vRes = vVel(i,j,k,bi,bj)
-c     &            + delPsi*recip_drF(k)*_recip_hFacS(i,j,k,bi,bj)
+c            elseif (gencost_barfile(kgen)(1:15).EQ.'m_horflux_difth')
+c     &        then 
+c              gencost_storefld(i,j,bi,bj,kgen) =
+c     &           gencost_storefld(i,j,bi,bj,kgen)
+c     &           -diffKhT*tmpmskW
+c     &            *_recip_dxC(i,j,bi,bj)*recip_deepFacC(k)
+c     &            *(theta(i,j,k,bi,bj)-theta(i-1,j,k,bi,bj))
+c     &            *cosFacU(j,bi,bj)
+c     &            *HeatCapacity_Cp*rhoConst
+c     &           -diffKhT*tmpmskS
+c     &            *_recip_dyC(i,j,bi,bj)*recip_deepFacC(k)
+c     &            *(theta(i,j,k,bi,bj)-theta(i,j-1,k,bi,bj))
+c#ifdef ISOTROPIC_COS_SCALING
+c     &            *cosFacV(j,bi,bj)
+c#endif
+c     &            *HeatCapacity_Cp*rhoConst
+
+c              gencost_storefld(i,j,bi,bj,kgen) =
+c     &          gencost_storefld(i,j,bi,bj,kgen)+dfx+dfy
+
+                delPsi = GM_PsiX(i,j,kp1,bi,bj)*maskp1
+     &            - GM_PsiX(i,j, k, bi,bj)
+                uRes = uVel(i,j,k,bi,bj)
+     &            + delPsi*recip_drF(k)*_recip_hFacW(i,j,k,bi,bj) 
+                delPsi = GM_PsiY(i,j,kp1,bi,bj)*maskp1
+     &            - GM_PsiY(i,j, k, bi,bj)
+                vRes = vVel(i,j,k,bi,bj)
+     &            + delPsi*recip_drF(k)*_recip_hFacS(i,j,k,bi,bj)
  
             
             ! Only compute tr[Vol,Heat,Salt] if necessary, use
