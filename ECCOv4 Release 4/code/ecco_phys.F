@@ -48,7 +48,7 @@ c     == local variables ==
       _RL areavolTile(nSx,nSy), areavolGlob
       _RL tmpfld, tmpvol, tmpmsk, tmpmsk2, tmpmskW, tmpmskS
       _RL tmp_sigmsk, tmpsig, tmpsig_lower, tmpsig_upper
-      _RL uRes, vRes, delPsi
+      _RL uRes, vRes, delPsi, tmpfldW, tmpfldS
 #endif
 
 c- note defined with overlap here, not needed, but more efficient
@@ -341,10 +341,6 @@ c
 c---------
           do k = 1,nr
 c
-            kp1 = MIN(k+1,nr)
-            maskp1 = 1.
-            IF (k.GE.nr) maskp1 = 0.
-            
             tmpmskW=0. _d 0
             tmpmskS=0. _d 0
             if (.NOT.gencost_msk_is3d(kgen)) then
@@ -392,44 +388,53 @@ c
      &          gencost_storefld(i,j,bi,bj,kgen)
      &          +uVel(i,j,k,bi,bj)*tmpmskW
      &          +vVel(i,j,k,bi,bj)*tmpmskS
-
-            elseif (gencost_barfile(kgen)(1:15).EQ.'m_horflux_theta')
+            endif
+            
+            tmpfldW=0. _d 0
+            tmpfldS=0. _d 0
+            tmpmsk2=0. _d 0
+            if (gencost_barfile(kgen)(1:15).EQ.'m_horflux_theta')
      &        then
-                delPsi = GM_PsiX(i,j,kp1,bi,bj)*maskp1
-     &            - GM_PsiX(i,j, k, bi,bj)
-                uRes = uVel(i,j,k,bi,bj)
-     &            + delPsi*recip_drF(k)*_recip_hFacW(i,j,k,bi,bj) 
-                delPsi = GM_PsiY(i,j,kp1,bi,bj)*maskp1
-     &            - GM_PsiY(i,j, k, bi,bj)
-                vRes = vVel(i,j,k,bi,bj)
-     &            + delPsi*recip_drF(k)*_recip_hFacS(i,j,k,bi,bj)
-
-               gencost_storefld(i,j,bi,bj,kgen) =
-     &          gencost_storefld(i,j,bi,bj,kgen)
-     &          +uRes*tmpmskW
-     &           *(theta(i,j,k,bi,bj)+theta(i-1,j,k,bi,bj))*halfRL
+              tmpfldW=(theta(i,j,k,bi,bj)+theta(i-1,j,k,bi,bj))*halfRL
      &           *HeatCapacity_Cp*rhoConst
-     &          +vRes*tmpmskS  
-     &           *(theta(i,j,k,bi,bj)+theta(i,j-1,k,bi,bj))*halfRL
+              tmpfldS=(theta(i,j,k,bi,bj)+theta(i,j-1,k,bi,bj))*halfRL
      &           *HeatCapacity_Cp*rhoConst
-
+              tmpmsk2=1. _d 0
             elseif (gencost_barfile(kgen)(1:14).EQ.'m_horflux_salt')
-     &        then
-                delPsi = GM_PsiX(i,j,kp1,bi,bj)*maskp1
+     &         then
+              tmpfldW=(salt(i,j,k,bi,bj)+salt(i-1,j,k,bi,bj))*halfRL
+              tmpfldS=(salt(i,j,k,bi,bj)+salt(i,j-1,k,bi,bj))*halfRL
+              tmpmsk2=1. _d 0
+            elseif ((gencost_barfile(kgen)(1:12).EQ.'m_horflux_fw')
+     &               .AND.(gencost_sRef(kgen).NE.0. _d 0))
+     &         then
+              tmpfldW=(gencost_sRef(kgen)-
+     &        (salt(i,j,k,bi,bj)+salt(i-1,j,k,bi,bj))*halfRL)
+     &        /gencost_sRef(kgen)
+              tmpfldS=(gencost_sRef(kgen)-
+     &        (salt(i,j,k,bi,bj)+salt(i,j-1,k,bi,bj))*halfRL)
+     &        /gencost_sRef(kgen)
+              tmpmsk2=1. _d 0
+            endif
+
+            if (tmpmsk2.EQ.1.) then
+               kp1 = MIN(k+1,nr)
+               maskp1 = 1.
+               IF (k.GE.nr) maskp1 = 0.
+            
+               delPsi = GM_PsiX(i,j,kp1,bi,bj)*maskp1
      &            - GM_PsiX(i,j, k, bi,bj)
-                uRes = uVel(i,j,k,bi,bj)
+               uRes = uVel(i,j,k,bi,bj)
      &            + delPsi*recip_drF(k)*_recip_hFacW(i,j,k,bi,bj) 
-                delPsi = GM_PsiY(i,j,kp1,bi,bj)*maskp1
+               delPsi = GM_PsiY(i,j,kp1,bi,bj)*maskp1
      &            - GM_PsiY(i,j, k, bi,bj)
-                vRes = vVel(i,j,k,bi,bj)
+               vRes = vVel(i,j,k,bi,bj)
      &            + delPsi*recip_drF(k)*_recip_hFacS(i,j,k,bi,bj)
 
                gencost_storefld(i,j,bi,bj,kgen) =
-     &          gencost_storefld(i,j,bi,bj,kgen)
-     &          +uRes*tmpmskW
-     &           *(salt(i,j,k,bi,bj)+salt(i-1,j,k,bi,bj))*halfRL
-     &          +vRes*tmpmskS  
-     &           *(salt(i,j,k,bi,bj)+salt(i,j-1,k,bi,bj))*halfRL
+     &         gencost_storefld(i,j,bi,bj,kgen)
+     &          +uRes*tmpmskW*tmpfldW
+     &          +vRes*tmpmskS*tmpfldS            
 
             ! Only compute tr[Vol,Heat,Salt] if necessary, use
             ! gencost_mask[W/S] rather than old msktrVol  

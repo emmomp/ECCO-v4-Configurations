@@ -250,7 +250,7 @@ c     objf_gencost - gencost user defined contribution
      &       gencost_mskC, gencost_mskW, gencost_mskS,
 #endif
      &       gencost_refPressure, gencost_sigmaLow, gencost_sigmaHigh,
-     &       gencost_tanhScale,
+     &       gencost_tanhScale, gencost_sRef,
      &       gencost_spmin, gencost_spmax, gencost_spzero,
      &       gencost_period, gencost_preproc_r, gencost_posproc_r,
      &       gencost_wei1d, gencost_1ddata
@@ -281,6 +281,7 @@ c     objf_gencost - gencost user defined contribution
       _RL  gencost_sigmaHigh(NGENCOST)
       _RL  gencost_refPressure(NGENCOST)
       _RL  gencost_tanhScale(NGENCOST)
+      _RL  gencost_sRef(NGENCOST)
 #ifdef ALLOW_GENCOST3D
       _RL  gencost_bar3d(1-olx:snx+olx,1-oly:sny+oly,
      &       nr,nsx,nsy,NGENCOST3D)
