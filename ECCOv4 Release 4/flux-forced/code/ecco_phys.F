@@ -472,14 +472,31 @@ c
 
                gencost_storefld(i,j,bi,bj,kgen) =
      &          gencost_storefld(i,j,bi,bj,kgen)
-c    &          +uVel(i,j,k,bi,bj)*tmpmskW
      &          +uRes*tmpmskW
      &           *(theta(i,j,k,bi,bj)+theta(i-1,j,k,bi,bj))*halfRL
      &           *HeatCapacity_Cp*rhoConst
-c     &          +vVel(i,j,k,bi,bj)*tmpmskS
      &          +vRes*tmpmskS
      &           *(theta(i,j,k,bi,bj)+theta(i,j-1,k,bi,bj))*halfRL
      &           *HeatCapacity_Cp*rhoConst
+           
+            elseif (gencost_barfile(kgen)(1:14).EQ.'m_horflux_salt')
+     &        then
+                delPsi = GM_PsiX(i,j,kp1,bi,bj)*maskp1
+     &            - GM_PsiX(i,j, k, bi,bj)
+                uRes = uVel(i,j,k,bi,bj)
+     &            + delPsi*recip_drF(k)*_recip_hFacW(i,j,k,bi,bj)
+                delPsi = GM_PsiY(i,j,kp1,bi,bj)*maskp1
+     &            - GM_PsiY(i,j, k, bi,bj)
+                vRes = vVel(i,j,k,bi,bj)
+     &            + delPsi*recip_drF(k)*_recip_hFacS(i,j,k,bi,bj)
+
+               gencost_storefld(i,j,bi,bj,kgen) =
+     &          gencost_storefld(i,j,bi,bj,kgen)
+     &          +uRes*tmpmskW
+     &           *(salt(i,j,k,bi,bj)+salt(i-1,j,k,bi,bj))*halfRL
+     &          +vRes*tmpmskS
+     &           *(salt(i,j,k,bi,bj)+salt(i,j-1,k,bi,bj))*halfRL
+
             endif
           enddo
 c---------
