@@ -207,6 +207,7 @@ c--   Read the namelist input.
      &         gencost_sigmaLow,
      &         gencost_sigmaHigh,
      &         gencost_tanhScale,
+     &         gencost_sRef,
      &         gencost_timevaryweight,
      &         mult_gencost
 #endif /* ALLOW_GENCOST_CONTRIBUTION */
@@ -617,6 +618,7 @@ c--   Set default values.
          gencost_sigmaLow(k)    = 0. _d 0
          gencost_sigmaHigh(k)   = 1. _d 3
          gencost_tanhScale(k)   = 1. _d 5
+         gencost_sRef(k)       = 35. _d 0
          gencost_pointer3d(k)  = 0
          gencost_msk_is3d(k)   = .FALSE.
          gencost_msk_pointer3d(k)  = 0
