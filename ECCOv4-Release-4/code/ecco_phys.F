@@ -422,14 +422,14 @@ c
                maskp1 = 1.
                IF (k.GE.nr) maskp1 = 0.
             
-               delPsi = GM_PsiX(i,j,kp1,bi,bj)*maskp1
-     &            - GM_PsiX(i,j, k, bi,bj)
+c               delPsi = GM_PsiX(i,j,kp1,bi,bj)*maskp1
+c     &            - GM_PsiX(i,j, k, bi,bj)
                uRes = uVel(i,j,k,bi,bj)
-     &            + delPsi*recip_drF(k)*_recip_hFacW(i,j,k,bi,bj) 
-               delPsi = GM_PsiY(i,j,kp1,bi,bj)*maskp1
-     &            - GM_PsiY(i,j, k, bi,bj)
+c     &            + delPsi*recip_drF(k)*_recip_hFacW(i,j,k,bi,bj) 
+c               delPsi = GM_PsiY(i,j,kp1,bi,bj)*maskp1
+c     &            - GM_PsiY(i,j, k, bi,bj)
                vRes = vVel(i,j,k,bi,bj)
-     &            + delPsi*recip_drF(k)*_recip_hFacS(i,j,k,bi,bj)
+c     &            + delPsi*recip_drF(k)*_recip_hFacS(i,j,k,bi,bj)
 
                gencost_storefld(i,j,bi,bj,kgen) =
      &         gencost_storefld(i,j,bi,bj,kgen)
