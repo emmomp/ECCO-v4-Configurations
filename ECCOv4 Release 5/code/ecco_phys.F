@@ -23,6 +23,8 @@ c     == global variables ==
 #include "DYNVARS.h"
 #include "FFIELDS.h"
 #include "GRID.h"
+#include "GMREDI_OPTIONS.h"
+#include "GMREDI.h"
 #ifdef ALLOW_ECCO
 # include "ECCO_SIZE.h"
 # include "ECCO.h"
@@ -46,9 +48,11 @@ c     == local variables ==
       integer jmin,jmax
       integer imin,imax
 #ifdef ALLOW_GENCOST_CONTRIBUTION
-      integer kgen, kgen3d, itr
+      integer kgen, kgen3d, itr, kp1, maskp1
       _RL areavolTile(nSx,nSy), areavolGlob
       _RL tmpfld, tmpvol, tmpmsk, tmpmsk2, tmpmskW, tmpmskS
+      _RL tmp_sigmsk, tmpsig, tmpsig_lower, tmpsig_upper
+      _RL uRes, vRes, delPsi, tmpfldW, tmpfldS
 #endif
 
 c- note defined with overlap here, not needed, but more efficient
@@ -217,7 +221,7 @@ C     i.e. sterGloH computed in ecco_phys.F (units converted from m to m2/s2)
             do j = 1,sNy
               do i =  1,sNx
                 m_UE(i,j,k,bi,bj)=0. _d 0
-                m_VN(i,j,k,bi,bj)=0. _d 0
+               m_VN(i,j,k,bi,bj)=0. _d 0
               enddo
             enddo
           enddo
@@ -282,6 +286,30 @@ c
               tmpmsk=gencost_mskC(i,j,k,bi,bj,kgen3d)
 #endif
             endif
+
+C ---- If density mask is enabled, use it here ----
+            IF ( maskC(i,j,k,bi,bj).EQ.oneRS .AND.
+     &           gencost_useDensityMask(kgen) ) THEN
+C            - first, calculate the scalar density
+             CALL FIND_RHO_SCALAR(
+     I              theta(i,j,k,bi,bj),
+     I              salt(i,j,k,bi,bj),
+     I              gencost_refPressure(kgen),
+     O              tmpsig,
+     I              myThid )
+C            - subtract 1000 to get sigma
+             tmpsig = tmpsig - 1000. _d 0
+C            - now, tmpmsk is sigmoid times this value
+             tmpsig_lower = 0.5 + 0.5*tanh(gencost_tanhScale(kgen)
+     &           *(tmpsig-gencost_sigmaLow(kgen)))
+             tmpsig_upper = 0.5 - 0.5*tanh(gencost_tanhScale(kgen)
+     &           *(tmpsig-gencost_sigmaHigh(kgen)))
+C             - update mask value based on the sigmoid function
+             tmp_sigmsk = tmpsig_lower*tmpsig_upper
+             tmpmsk = tmpmsk*tmp_sigmsk
+            ENDIF
+C ---- end of density mask (but tmpmsk is used below)
+
 c
 cts ---
 c Now: at each (i,j,k,bi,bj) fill the SCALAR variables
@@ -397,6 +425,31 @@ c
               tmpmskS=gencost_mskS(i,j,k,bi,bj,kgen3d)
 #endif
             endif
+
+C ---- If density mask is enabled, use it here ----
+            IF ( (maskW(i,j,k,bi,bj).EQ.oneRS .OR.
+     &           maskS(i,j,k,bi,bj).EQ.oneRS) .AND.
+     &           gencost_useDensityMask(kgen) ) THEN
+C            - first, calculate the scalar density
+             CALL FIND_RHO_SCALAR(
+     I              theta(i,j,k,bi,bj),
+     I              salt(i,j,k,bi,bj),
+     I              gencost_refPressure(kgen),
+     O              tmpsig,
+     I              myThid )
+C            - subtract 1000 to get sigma
+             tmpsig = tmpsig - 1000. _d 0
+C            - now, tmpmsk is sigmoid times this value
+             tmpsig_lower = 0.5 + 0.5*tanh(gencost_tanhScale(kgen)
+     &           *(tmpsig-gencost_sigmaLow(kgen)))
+             tmpsig_upper = 0.5 - 0.5*tanh(gencost_tanhScale(kgen)
+     &           *(tmpsig-gencost_sigmaHigh(kgen)))
+C             - update mask value based on the sigmoid function
+             tmp_sigmsk = tmpsig_lower*tmpsig_upper
+             tmpmskW = tmpmskW*tmp_sigmsk
+             tmpmskS = tmpmskS*tmp_sigmsk
+            ENDIF
+
             tmpmskW=tmpmskW*hFacW(i,j,k,bi,bj)*dyG(i,j,bi,bj)*drF(k)
             tmpmskS=tmpmskS*hFacS(i,j,k,bi,bj)*dxG(i,j,bi,bj)*drF(k)
 c
@@ -438,6 +491,85 @@ c now summing
                 trSalt(i,j,k,bi,bj)=trSaltW(i,j,k)+trSaltS(i,j,k)
 
             endif
+            
+            tmpfldW=0. _d 0
+            tmpfldS=0. _d 0
+            tmpmsk2=0. _d 0
+            if (gencost_barfile(kgen)(1:15).EQ.'m_horflux_theta')
+     &        then
+              tmpfldW=(theta(i,j,k,bi,bj)+theta(i-1,j,k,bi,bj))*halfRL
+     &           *HeatCapacity_Cp*rhoConst
+              tmpfldS=(theta(i,j,k,bi,bj)+theta(i,j-1,k,bi,bj))*halfRL
+     &           *HeatCapacity_Cp*rhoConst
+              tmpmsk2=1. _d 0
+            elseif (gencost_barfile(kgen)(1:14).EQ.'m_horflux_salt')
+     &         then
+              tmpfldW=(salt(i,j,k,bi,bj)+salt(i-1,j,k,bi,bj))*halfRL
+              tmpfldS=(salt(i,j,k,bi,bj)+salt(i,j-1,k,bi,bj))*halfRL
+              tmpmsk2=1. _d 0
+            elseif ((gencost_barfile(kgen)(1:12).EQ.'m_horflux_fw')
+     &               .AND.(gencost_sRef(kgen).NE.0. _d 0))
+     &         then
+              tmpfldW=(gencost_sRef(kgen)-
+     &        (salt(i,j,k,bi,bj)+salt(i-1,j,k,bi,bj))*halfRL)
+     &        /gencost_sRef(kgen)
+              tmpfldS=(gencost_sRef(kgen)-
+     &        (salt(i,j,k,bi,bj)+salt(i,j-1,k,bi,bj))*halfRL)
+     &        /gencost_sRef(kgen)
+              tmpmsk2=1. _d 0
+            endif
+
+            if (tmpmsk2.EQ.1.) then
+               kp1 = MIN(k+1,nr)
+               maskp1 = 1.
+               IF (k.GE.nr) maskp1 = 0.
+            
+c               delPsi = GM_PsiX(i,j,kp1,bi,bj)*maskp1
+c     &            - GM_PsiX(i,j, k, bi,bj)
+               uRes = uVel(i,j,k,bi,bj)
+c     &            + delPsi*recip_drF(k)*_recip_hFacW(i,j,k,bi,bj) 
+c               delPsi = GM_PsiY(i,j,kp1,bi,bj)*maskp1
+c     &            - GM_PsiY(i,j, k, bi,bj)
+               vRes = vVel(i,j,k,bi,bj)
+c     &            + delPsi*recip_drF(k)*_recip_hFacS(i,j,k,bi,bj)
+
+               gencost_storefld(i,j,bi,bj,kgen) =
+     &         gencost_storefld(i,j,bi,bj,kgen)
+     &          +uRes*tmpmskW*tmpfldW
+     &          +vRes*tmpmskS*tmpfldS            
+
+            ! Only compute tr[Vol,Heat,Salt] if necessary, use
+            ! gencost_mask[W/S] rather than old msktrVol  
+            elseif ( gencost_barfile(kgen)(1:7).eq.'m_trVol' .or. 
+     &               gencost_barfile(kgen)(1:8).eq.'m_trHeat'.or.
+     &               gencost_barfile(kgen)(1:8).eq.'m_trSalt'    ) then
+
+                trVolW(i,j,k) =
+     &                 uVel(i,j,k,bi,bj)*tmpmskW
+     &                *maskInW(i,j,bi,bj)
+                trVolS(i,j,k) =
+     &                 vVel(i,j,k,bi,bj)*tmpmskS
+     &                *maskInS(i,j,bi,bj)
+
+                trHeatW(i,j,k) = trVolW(i,j,k)
+     &                *(theta(i,j,k,bi,bj)+theta(i-1,j,k,bi,bj))*halfRL
+     &                *HeatCapacity_Cp*rhoConst
+                trHeatS(i,j,k) = trVolS(i,j,k)
+     &                *(theta(i,j,k,bi,bj)+theta(i,j-1,k,bi,bj))*halfRL
+     &                *HeatCapacity_Cp*rhoConst
+
+                trSaltW(i,j,k) = trVolW(i,j,k)
+     &                *(salt(i,j,k,bi,bj)+salt(i-1,j,k,bi,bj))*halfRL
+     &                *rhoConst/1000.
+                trSaltS(i,j,k) = trVolS(i,j,k)
+     &                *(salt(i,j,k,bi,bj)+salt(i,j-1,k,bi,bj))*halfRL
+     &                *rhoConst/1000.
+c now summing
+                trVol(i,j,k,bi,bj)=trVolW(i,j,k)+trVolS(i,j,k)
+                trHeat(i,j,k,bi,bj)=trHeatW(i,j,k)+trHeatS(i,j,k)
+                trSalt(i,j,k,bi,bj)=trSaltW(i,j,k)+trSaltS(i,j,k)
+
+           endif
           enddo
 c---------
          enddo
