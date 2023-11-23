@@ -524,6 +524,9 @@ CADJ INIT comlev1_cg2d_iter
 CADJ &     = COMMON,nchklev_1*nthreads_chkpt*numItersMax
 #   endif
 c--
+#  ifdef ALLOW_GENCOST_CONTRIBUTION
+CADJ INIT comlev1_ngencost = COMMON,nchklev_1*NGENCOST
+#  endif
 c**************************************
 
 #ifdef STORE_LOADEDREC_TEST
