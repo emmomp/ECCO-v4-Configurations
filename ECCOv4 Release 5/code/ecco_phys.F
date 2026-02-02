@@ -2,10 +2,6 @@
 #ifdef ALLOW_SHELFICE
 # include "SHELFICE_OPTIONS.h"
 #endif
-#ifdef ALLOW_SEAICE
-#  include "SEAICE_SIZE.h"
-#  include "SEAICE.h"
-#endif
 
       subroutine ecco_phys( myThid )
 
@@ -37,6 +33,9 @@ c     == global variables ==
 #endif
 #if (defined ALLOW_GENCOST_CONTRIBUTION) && (defined ALLOW_SHELFICE)
 # include "SHELFICE.h"
+#endif
+#ifdef ALLOW_SEAICE
+#  include "SEAICE.h"
 #endif
 
 c     == routine arguments ==
