@@ -354,7 +354,7 @@ c                            = [W/m^2] *[m^2]
 c                            = [W]
 cts ---
           if((gencost_barfile(kgen)(1:16).EQ.'m_boxmean_shifwf').or.
-     &       (gencost_barfile(kgen)(1:16).EQ.'m_boxmean_shihtf')).or.
+     &       (gencost_barfile(kgen)(1:16).EQ.'m_boxmean_shihtf').or.
      &       (gencost_barfile(kgen)(1:16).EQ.'m_boxmean_siarea')) then
 
             tmpmsk=maskSHI(i,j,1,bi,bj)*
