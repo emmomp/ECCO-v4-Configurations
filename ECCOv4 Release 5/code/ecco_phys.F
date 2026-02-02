@@ -2,6 +2,10 @@
 #ifdef ALLOW_SHELFICE
 # include "SHELFICE_OPTIONS.h"
 #endif
+#ifdef ALLOW_SEAICE
+#  include "SEAICE_SIZE.h"
+#  include "SEAICE.h"
+#endif
 
       subroutine ecco_phys( myThid )
 
@@ -365,7 +369,7 @@ cts ---
             elseif (gencost_barfile(kgen)(11:16).EQ.'shihtf') then
               tmpfld=shelficeHeatFlux(i,j,bi,bj)
             elseif (gencost_barfile(kgen)(11:16).EQ.'siarea') then
-              tmpfld=AREA(i,j,bi,bj)
+              tmpfld=area(i,j,bi,bj)
             endif
             if (tmpmsk.NE.0. _d 0) tmpmsk2=1. _d 0
           endif
