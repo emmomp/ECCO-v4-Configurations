@@ -361,8 +361,8 @@ c                            = [W/m^2] *[m^2]
 c                            = [W]
 cts ---
           if((gencost_barfile(kgen)(1:16).EQ.'m_boxmean_shifwf').or.
-     &       (gencost_barfile(kgen)(1:16).EQ.'m_boxmean_shihtf').or.
-     &       (gencost_barfile(kgen)(1:16).EQ.'m_boxmean_siarea')) then
+     &       (gencost_barfile(kgen)(1:16).EQ.'m_boxmean_shihtf'))
+     &       then
 
             tmpmsk=maskSHI(i,j,1,bi,bj)*
      &             gencost_mskCsurf(i,j,bi,bj,kgen)
@@ -371,12 +371,19 @@ cts ---
               tmpfld=shelficeFreshWaterFlux(i,j,bi,bj) / rhoConstFresh
             elseif (gencost_barfile(kgen)(11:16).EQ.'shihtf') then
               tmpfld=shelficeHeatFlux(i,j,bi,bj)
-            elseif (gencost_barfile(kgen)(11:16).EQ.'siarea') then
-              tmpfld=area(i,j,bi,bj)
             endif
             if (tmpmsk.NE.0. _d 0) tmpmsk2=1. _d 0
           endif
 #endif /* ALLOW_SHELFICE */
+#ifdef ALLOW_SEAICE
+          if((gencost_barfile(kgen)(1:16).EQ.'m_boxmean_siarea'))
+     &         then
+
+            tmpmsk=maskC(i,j,1,bi,bj)*gencost_mskCsurf(i,j,bi,bj,kgen)
+            tmpfld=area(i,j,bi,bj)
+            if (tmpmsk.NE.0. _d 0) tmpmsk2=1. _d 0
+          endif
+#endif /* ALLOW_SEAICE */
 
 cts ---
 c Fill 2D field
