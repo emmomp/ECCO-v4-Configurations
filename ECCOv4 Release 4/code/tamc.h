@@ -1,8 +1,6 @@
 C $Header: /u/gcmpack/MITgcm_contrib/ecco_utils/ecco_v4_release3_devel/code/tamc.h,v 1.1 2017/05/04 17:46:37 ou.wang Exp $
 C $Name:  $
 
-#include "PACKAGES_CONFIG.h"
-
 c     ================================================================
 c     HEADER TAMC
 c     ================================================================
@@ -111,11 +109,6 @@ c     and writing data.
 #endif
       INTEGER    maxcube
       PARAMETER( maxcube     = 3 )
-
-      INTEGER act0, act1, act2, act3, act4
-      INTEGER max0, max1, max2, max3
-      INTEGER iikey, kkey, passkey, igadkey, 
-     &        itdkey, idynkey, igmkey, iptrkey
 
 #ifdef ALLOW_CG2D_NSA
 C     Parameter that is needed for the tape complev_cg2d_iter

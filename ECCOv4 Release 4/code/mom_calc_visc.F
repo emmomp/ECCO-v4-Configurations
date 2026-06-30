@@ -83,7 +83,6 @@ C     == Global variables ==
 #include "MOM_VISC.h"
 #ifdef ALLOW_AUTODIFF_TAMC
 #include "tamc.h"
-#include "tamc_keys.h"
 #endif /* ALLOW_AUTODIFF_TAMC */
 
 C     !INPUT/OUTPUT PARAMETERS:
@@ -109,6 +108,9 @@ C     !LOCAL VARIABLES:
 #endif
 #ifdef ALLOW_AUTODIFF_TAMC
       INTEGER lockey_1, lockey_2
+      INTEGER act1, act2, act3, act4
+      INTEGER max1, max2, max3
+      INTEGER ikey, lockey_1, lockey_2
 #endif
       _RL smag2fac, smag4fac
       _RL leith2fac, leith4fac
