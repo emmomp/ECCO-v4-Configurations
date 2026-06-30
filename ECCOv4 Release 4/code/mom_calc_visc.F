@@ -107,7 +107,6 @@ C     !LOCAL VARIABLES:
       _RL shiftAh, shiftA4
 #endif
 #ifdef ALLOW_AUTODIFF_TAMC
-      INTEGER lockey_1, lockey_2
       INTEGER act1, act2, act3, act4
       INTEGER max1, max2, max3
       INTEGER ikey, lockey_1, lockey_2
