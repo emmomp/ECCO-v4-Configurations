@@ -1,1 +1,1 @@
-../code_ad/seaice_growth.F
+../code/seaice_growth.F

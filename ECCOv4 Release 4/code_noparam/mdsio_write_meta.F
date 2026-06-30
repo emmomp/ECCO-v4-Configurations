@@ -1,1 +1,1 @@
-../code_ad/mdsio_write_meta.F
+../code/mdsio_write_meta.F

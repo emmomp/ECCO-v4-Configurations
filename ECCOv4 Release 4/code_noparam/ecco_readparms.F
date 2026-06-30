@@ -1,1 +1,1 @@
-../code_ad/ecco_readparms.F
+../code/ecco_readparms.F

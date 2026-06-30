@@ -1,1 +1,1 @@
-../code_ad/solve_tridiagonal.F
+../code/solve_tridiagonal.F

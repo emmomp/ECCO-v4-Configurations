@@ -1,1 +1,1 @@
-../code_ad/ctrl_map_ini_genarr.F
+../code/ctrl_map_ini_genarr.F

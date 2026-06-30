@@ -1,1 +1,1 @@
-../code_ad/GMREDI_OPTIONS.h
+../code/GMREDI_OPTIONS.h

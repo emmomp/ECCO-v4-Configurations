@@ -1,1 +1,1 @@
-../code_ad/cg2d_sad.F
+../code/cg2d_sad.F

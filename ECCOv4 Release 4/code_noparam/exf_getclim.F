@@ -1,1 +1,1 @@
-../code_ad/exf_getclim.F
+../code/exf_getclim.F

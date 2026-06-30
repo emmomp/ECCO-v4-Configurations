@@ -1,1 +1,1 @@
-../code_ad/tamc.h
+../code/tamc.h

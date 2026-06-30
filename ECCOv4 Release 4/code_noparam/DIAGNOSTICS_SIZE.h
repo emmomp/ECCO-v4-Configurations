@@ -1,1 +1,1 @@
-../code_ad/DIAGNOSTICS_SIZE.h
+../code/DIAGNOSTICS_SIZE.h

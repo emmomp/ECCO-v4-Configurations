@@ -1,1 +1,1 @@
-../code_ad/ecco_phys.F
+../code/ecco_phys.F

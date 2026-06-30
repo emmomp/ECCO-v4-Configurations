@@ -1,1 +1,1 @@
-../code_ad/ctrl_map_ini_gentim2d.F
+../code/ctrl_map_ini_gentim2d.F

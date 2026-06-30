@@ -1,1 +1,1 @@
-../code_ad/cost_gencost_sshv4.F
+../code/cost_gencost_sshv4.F

@@ -1,1 +1,1 @@
-../code_ad/seaice_diagnostics_init.F
+../code/seaice_diagnostics_init.F

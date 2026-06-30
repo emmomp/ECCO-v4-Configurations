@@ -1,1 +1,1 @@
-../code_ad/ecco_check.F
+../code/ecco_check.F

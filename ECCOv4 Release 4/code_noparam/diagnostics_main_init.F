@@ -1,1 +1,1 @@
-../code_ad/diagnostics_main_init.F
+../code/diagnostics_main_init.F

@@ -1,1 +1,1 @@
-../code_ad/stergloh_output.F
+../code/stergloh_output.F
