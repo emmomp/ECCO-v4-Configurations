@@ -458,38 +458,6 @@ c
      &          gencost_storefld(i,j,bi,bj,kgen)
      &          +uVel(i,j,k,bi,bj)*tmpmskW
      &          +vVel(i,j,k,bi,bj)*tmpmskS
-
-            ! Only compute tr[Vol,Heat,Salt] if necessary, use
-            ! gencost_mask[W/S] rather than old msktrVol
-            elseif ( gencost_barfile(kgen)(1:7).eq.'m_trVol' .or.
-     &               gencost_barfile(kgen)(1:8).eq.'m_trHeat'.or.
-     &               gencost_barfile(kgen)(1:8).eq.'m_trSalt'    ) then
-
-                trVolW(i,j,k) =
-     &                 uVel(i,j,k,bi,bj)*tmpmskW
-     &                *maskInW(i,j,bi,bj)
-                trVolS(i,j,k) =
-     &                 vVel(i,j,k,bi,bj)*tmpmskS
-     &                *maskInS(i,j,bi,bj)
-
-                trHeatW(i,j,k) = trVolW(i,j,k)
-     &                *(theta(i,j,k,bi,bj)+theta(i-1,j,k,bi,bj))*halfRL
-     &                *HeatCapacity_Cp*rhoConst
-                trHeatS(i,j,k) = trVolS(i,j,k)
-     &                *(theta(i,j,k,bi,bj)+theta(i,j-1,k,bi,bj))*halfRL
-     &                *HeatCapacity_Cp*rhoConst
-
-                trSaltW(i,j,k) = trVolW(i,j,k)
-     &                *(salt(i,j,k,bi,bj)+salt(i-1,j,k,bi,bj))*halfRL
-     &                *rhoConst/1000.
-                trSaltS(i,j,k) = trVolS(i,j,k)
-     &                *(salt(i,j,k,bi,bj)+salt(i,j-1,k,bi,bj))*halfRL
-     &                *rhoConst/1000.
-c now summing
-                trVol(i,j,k,bi,bj)=trVolW(i,j,k)+trVolS(i,j,k)
-                trHeat(i,j,k,bi,bj)=trHeatW(i,j,k)+trHeatS(i,j,k)
-                trSalt(i,j,k,bi,bj)=trSaltW(i,j,k)+trSaltS(i,j,k)
-
             endif
             
             tmpfldW=0. _d 0
